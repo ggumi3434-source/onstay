@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>ONSTAY 관리자 — 예약 관리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.20/500.min.css">
+<style>
+:root{
+  --ink:#0A1B33;--ink-deep:#060F1F;--paper:#F4F2EC;--card:#FFFFFF;
+  --gold:#C9A24B;--gold-hi:#E3C57E;--gold-deep:#A8843A;--gold-soft:#F1E7CC;
+  --line:#E2DACB;--txt:#22303F;--txt-soft:#727A87;
+  --sans:'Pretendard Variable',Pretendard,sans-serif;--mono:'JetBrains Mono',monospace;
+  --gold-grad:linear-gradient(115deg,#E3C57E,#C9A24B 48%,#B08A3E);
+  --st-new:#3D6FD6;--st-talk:#C98A2B;--st-fix:#1E9B57;--st-done:#6B7585;--st-cancel:#C0453A;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--txt);font-size:15px;-webkit-font-smoothing:antialiased;word-break:keep-all}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+
+/* 로그인 화면 */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#0D2444,var(--ink) 55%,var(--ink-deep));padding:20px}
+.login-box{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.login-box .brand{display:flex;align-items:center;gap:9px;justify-content:center;margin-bottom:8px}
+.login-box .brand .mark{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--gold-deep);border:1px solid var(--gold);padding:4px 8px;border-radius:4px}
+.login-box .brand b{font-size:20px;color:var(--ink)}
+.login-box .brand span{font-family:var(--mono);font-size:10px;color:var(--gold-deep);letter-spacing:.2em}
+.login-box h1{text-align:center;font-size:15px;color:var(--txt-soft);font-weight:500;margin-bottom:28px}
+.login-box label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;color:var(--ink)}
+.login-box input{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:13px 15px;font-size:14.5px;margin-bottom:16px;background:#FCFBF7;transition:border-color .2s}
+.login-box input:focus{border-color:var(--gold);outline:none}
+.login-box .login-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;transition:background .3s}
+.login-box .login-btn:hover{background:var(--gold-grad);color:var(--ink)}
+.login-box .err{color:#C0453A;font-size:13px;margin-top:14px;text-align:center;display:none}
+.login-box .err.show{display:block}
+
+/* 대시보드 */
+.dash{display:none}
+.dash.show{display:block}
+.topbar{background:var(--ink);color:#fff;padding:16px 0;position:sticky;top:0;z-index:10}
+.topbar .wrap{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.topbar .brand{display:flex;align-items:center;gap:9px}
+.topbar .brand .mark{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold-hi);border:1px solid rgba(201,162,75,.5);padding:4px 8px;border-radius:4px}
+.topbar .brand b{font-size:17px}
+.topbar .brand span{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.18em}
+.topbar .right{display:flex;align-items:center;gap:16px}
+.topbar .who{font-size:13px;color:rgba(255,255,255,.6);font-family:var(--mono)}
+.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;transition:background .2s}
+.logout-btn:hover{background:rgba(255,255,255,.2)}
+
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:28px 0}
+.stat{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(10,27,51,.06)}
+.stat .n{font-family:var(--mono);font-size:26px;font-weight:500;color:var(--ink)}
+.stat .l{font-size:12.5px;color:var(--txt-soft);margin-top:3px}
+.stat.total .n{color:var(--gold-deep)}
+@media (max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar h2{font-size:19px;color:var(--ink)}
+.toolbar .filters{display:flex;gap:7px;flex-wrap:wrap}
+.fbtn{border:1px solid var(--line);background:#fff;color:var(--txt-soft);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;transition:all .2s}
+.fbtn.active{background:var(--ink);color:var(--gold-hi);border-color:var(--ink)}
+.refresh{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 13px;font-size:13px;color:var(--txt-soft);font-weight:600}
+.refresh:hover{border-color:var(--gold)}
+
+.tbl-wrap{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(10,27,51,.07);margin-bottom:50px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--ink);color:#fff;text-align:left;padding:14px 16px;font-size:12.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+td{padding:15px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FCFAF4}
+.c-name{font-weight:700;color:var(--ink)}
+.c-phone{font-family:var(--mono);font-size:13px;color:var(--txt-soft)}
+.c-date{font-family:var(--mono);font-size:12px;color:var(--txt-soft);white-space:nowrap}
+.c-cart{font-size:12.5px;color:var(--txt-soft);line-height:1.6;max-width:240px}
+.c-amount{font-family:var(--mono);font-weight:500;color:var(--ink);white-space:nowrap}
+.memo-txt{font-size:13px;color:var(--txt);max-width:220px;white-space:pre-wrap;line-height:1.55}
+.status-sel{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;background:#fff;cursor:pointer}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;color:#fff}
+.del-btn{background:none;border:none;color:var(--txt-soft);font-size:15px;padding:5px;transition:color .2s}
+.del-btn:hover{color:#C0453A}
+.empty{text-align:center;color:var(--txt-soft);padding:70px 20px;font-size:15px;line-height:1.9}
+.loading{text-align:center;color:var(--txt-soft);padding:70px;font-size:14px}
+@media (max-width:920px){
+  .tbl-wrap{overflow-x:auto}
+  table{min-width:900px}
+}
+</style>
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="brand"><span class="mark">ICN ✈</span><b>온스테이</b><span>ONSTAY</span></div>
+    <h1>관리자 로그인</h1>
+    <label for="email">이메일</label>
+    <input type="email" id="email" placeholder="ggumi3434@gmail.com" autocomplete="username">
+    <label for="pw">비밀번호</label>
+    <input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn">로그인</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 대시보드 -->
+<div class="dash" id="dash">
+  <div class="topbar">
+    <div class="wrap">
+      <div class="brand"><span class="mark">ICN ✈</span><b>온스테이 관리자</b><span>ONSTAY ADMIN</span></div>
+      <div class="right">
+        <span class="who" id="whoami"></span>
+        <button class="logout-btn" id="logoutBtn">로그아웃</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats" id="stats"></div>
+
+    <div class="toolbar">
+      <h2>예약 문의 관리</h2>
+      <div class="filters" id="filters">
+        <button class="fbtn active" data-f="all">전체</button>
+        <button class="fbtn" data-f="접수">접수</button>
+        <button class="fbtn" data-f="상담중">상담중</button>
+        <button class="fbtn" data-f="확정">확정</button>
+        <button class="fbtn" data-f="완료">완료</button>
+        <button class="fbtn" data-f="취소">취소</button>
+        <button class="refresh" id="refreshBtn">↻ 새로고침</button>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>접수일시</th><th>이름</th><th>연락처</th><th>목적지</th><th>일정</th>
+            <th>장바구니</th><th>금액</th><th>요청사항</th><th>상태</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="10" class="loading">불러오는 중…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// ===== Supabase 연결 (▼ 값 교체 지점) =====
+const SUPABASE_URL = "https://uwtzqwwraxkndshlzyes.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3dHpxd3dyYXhrbmRzaGx6eWVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMTYyOTgsImV4cCI6MjA5Nzg5MjI5OH0.d7PeLnccokSI99ZGpcMM9zeqyjSgwReYzLZ3jJjcSAQ";
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const STATUS = ["접수","상담중","확정","완료","취소"];
+const STATUS_COLOR = {"접수":"var(--st-new)","상담중":"var(--st-talk)","확정":"var(--st-fix)","완료":"var(--st-done)","취소":"var(--st-cancel)"};
+const won = n => "₩"+(n||0).toLocaleString("ko-KR");
+const $ = id => document.getElementById(id);
+
+let allRows = [], curFilter = "all";
+
+// ===== 로그인 =====
+async function checkSession(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){ showDash(session.user); }
+  else { $("loginScreen").style.display="flex"; $("dash").classList.remove("show"); }
+}
+$("loginBtn").addEventListener("click", login);
+$("pw").addEventListener("keydown", e=>{ if(e.key==="Enter") login(); });
+async function login(){
+  const email = $("email").value.trim();
+  const pw = $("pw").value;
+  const err = $("loginErr");
+  err.classList.remove("show");
+  if(!email||!pw){ err.textContent="이메일과 비밀번호를 입력해 주세요."; err.classList.add("show"); return; }
+  $("loginBtn").textContent="로그인 중…"; $("loginBtn").disabled=true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password:pw });
+  $("loginBtn").textContent="로그인"; $("loginBtn").disabled=false;
+  if(error){ err.textContent="로그인 실패: 이메일 또는 비밀번호를 확인해 주세요."; err.classList.add("show"); return; }
+  showDash(data.user);
+}
+function showDash(user){
+  $("loginScreen").style.display="none";
+  $("dash").classList.add("show");
+  $("whoami").textContent = user.email;
+  loadReservations();
+}
+$("logoutBtn").addEventListener("click", async()=>{
+  await sb.auth.signOut();
+  location.reload();
+});
+
+// ===== 예약 불러오기 =====
+async function loadReservations(){
+  $("rows").innerHTML = `<tr><td colspan="10" class="loading">불러오는 중…</td></tr>`;
+  const { data, error } = await sb.from("reservations").select("*").order("created_at",{ascending:false});
+  if(error){ $("rows").innerHTML = `<tr><td colspan="10" class="empty">불러오기 오류: ${error.message}</td></tr>`; return; }
+  allRows = data || [];
+  renderStats();
+  renderRows();
+}
+$("refreshBtn").addEventListener("click", loadReservations);
+
+// ===== 통계 =====
+function renderStats(){
+  const c = {total:allRows.length, 접수:0, 상담중:0, 확정:0, 완료:0};
+  allRows.forEach(r=>{ if(c[r.status]!==undefined) c[r.status]++; });
+  $("stats").innerHTML = `
+    <div class="stat total"><div class="n">${c.total}</div><div class="l">전체 문의</div></div>
+    <div class="stat"><div class="n">${c.접수}</div><div class="l">접수</div></div>
+    <div class="stat"><div class="n">${c.상담중}</div><div class="l">상담중</div></div>
+    <div class="stat"><div class="n">${c.확정}</div><div class="l">확정</div></div>
+    <div class="stat"><div class="n">${c.완료}</div><div class="l">완료</div></div>`;
+}
+
+// ===== 필터 =====
+$("filters").addEventListener("click", e=>{
+  const f = e.target.dataset.f;
+  if(!f) return;
+  curFilter = f;
+  document.querySelectorAll("#filters .fbtn").forEach(b=>b.classList.toggle("active", b.dataset.f===f));
+  renderRows();
+});
+
+// ===== 행 렌더링 =====
+function renderRows(){
+  const list = curFilter==="all" ? allRows : allRows.filter(r=>r.status===curFilter);
+  if(!list.length){ $("rows").innerHTML = `<tr><td colspan="10" class="empty">해당하는 예약 문의가 없습니다.</td></tr>`; return; }
+  $("rows").innerHTML = list.map(r=>{
+    const dt = new Date(r.created_at);
+    const dstr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,"0")}.${String(dt.getDate()).padStart(2,"0")}<br>${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+    let cart = "";
+    if(r.cart_items && Array.isArray(r.cart_items) && r.cart_items.length){
+      cart = r.cart_items.map(i=>`· ${i.name} ×${i.qty}`).join("<br>");
+    } else { cart = '<span style="color:#bbb">—</span>'; }
+    const opts = STATUS.map(s=>`<option value="${s}" ${s===r.status?"selected":""}>${s}</option>`).join("");
+    return `<tr data-id="${r.id}">
+      <td class="c-date">${dstr}</td>
+      <td class="c-name">${esc(r.name)}</td>
+      <td class="c-phone">${esc(r.phone)}</td>
+      <td>${esc(r.destination)}</td>
+      <td style="font-size:13px;color:var(--txt-soft)">${esc(r.travel_date||"—")}</td>
+      <td class="c-cart">${cart}</td>
+      <td class="c-amount">${won(r.total_amount)}</td>
+      <td class="memo-txt">${esc(r.memo||"—")}</td>
+      <td><select class="status-sel" data-id="${r.id}" style="color:${STATUS_COLOR[r.status]}">${opts}</select></td>
+      <td><button class="del-btn" data-del="${r.id}" title="삭제">🗑</button></td>
+    </tr>`;
+  }).join("");
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+// ===== 상태 변경 =====
+$("rows").addEventListener("change", async e=>{
+  if(!e.target.classList.contains("status-sel")) return;
+  const id = e.target.dataset.id, status = e.target.value;
+  e.target.style.color = STATUS_COLOR[status];
+  const { error } = await sb.from("reservations").update({ status }).eq("id", id);
+  if(error){ alert("상태 변경 실패: "+error.message); return; }
+  const row = allRows.find(r=>r.id===id); if(row) row.status = status;
+  renderStats();
+});
+
+// ===== 삭제 =====
+$("rows").addEventListener("click", async e=>{
+  const id = e.target.dataset.del;
+  if(!id) return;
+  if(!confirm("이 예약 문의를 삭제하시겠습니까?")) return;
+  const { error } = await sb.from("reservations").delete().eq("id", id);
+  if(error){ alert("삭제 실패: "+error.message); return; }
+  allRows = allRows.filter(r=>r.id!==id);
+  renderStats(); renderRows();
+});
+
+checkSession();
+</script>
+</body>
+</html>
